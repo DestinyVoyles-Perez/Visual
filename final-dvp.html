@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Top Artist by Age Group</title>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .chart-container {
+        margin-top: 20px;
+      }
+      .bar {
+        fill: red;
+      }
+      .axis text {
+        font-size: 12px;
+      }
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+      .label {
+        font-size: 16px;
+        font-weight: bold;
+      }
+      .dropdownlabel {
+        margin-right: 10px;
+      }
+      .controls {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Top Artists by Age Group</h1>
+
+    <div class="controls">
+      <span class="dropdown-label">Select Streaming Platform:</span>
+      <select id="platform-selector">
+        <option value="All">All Platforms</option>
+        <option value="Spotify">Spotify</option>
+        <option value="Apple Music">Apple Music</option>
+        <option value="Tidal">Tidal</option>
+        <option value="Deezer">Deezer</option>
+        <option value="Amazon Music">Amazon Music</option>
+        <option value="Youtube">Youtube</option>
+      </select>
+    </div>
+    <div id="chart" class="chart-container">
+
+    </div>
+
+    <script>
+      var margin= {top: 40, right: 20, bottom: 60, left: 150};
+      var width = 800 - margin.left - margin.right;
+      var height = 500 - margin.top - margin.bottom;
+
+      var svg = d3.select("#chart").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+      var ageGroups= [
+      {name: "Teens (13-19)", min: 13, max: 19},
+      {name: "20s (20-29)", min: 20, max: 29},
+      {name: "30s (30-39)", min: 30, max: 39},
+      {name: "40s (40-49)", min: 40, max: 49},
+      {name: "50s+ (50+)", min: 50, max: 100}
+    ];
+
+      var data =[
+  {
+    "User_ID": "U1000",
+    "Age": 34,
+    "Country": "Japan",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 295,
+    "Number of Songs Liked": 138,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 47.42,
+    "Repeat Song Rate (%)": 16.74
+  },
+  {
+    "User_ID": "U1001",
+    "Age": 24,
+    "Country": "Germany",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 86,
+    "Number of Songs Liked": 388,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 12.06,
+    "Repeat Song Rate (%)": 69.25
+  },
+  {
+    "User_ID": "U1002",
+    "Age": 49,
+    "Country": "Germany",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 363,
+    "Number of Songs Liked": 368,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 47.19,
+    "Repeat Song Rate (%)": 67.38
+  },
+  {
+    "User_ID": "U1003",
+    "Age": 55,
+    "Country": "Australia",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 348,
+    "Number of Songs Liked": 349,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 31.27,
+    "Repeat Song Rate (%)": 76.51
+  },
+  {
+    "User_ID": "U1004",
+    "Age": 13,
+    "Country": "Germany",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 30,
+    "Number of Songs Liked": 328,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 30.68,
+    "Repeat Song Rate (%)": 43.41
+  },
+  {
+    "User_ID": "U1005",
+    "Age": 25,
+    "Country": "South Korea",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 536,
+    "Number of Songs Liked": 243,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 70.26,
+    "Repeat Song Rate (%)": 27.79
+  },
+  {
+    "User_ID": "U1006",
+    "Age": 49,
+    "Country": "Australia",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 547,
+    "Number of Songs Liked": 70,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 11.92,
+    "Repeat Song Rate (%)": 37.75
+  },
+  {
+    "User_ID": "U1007",
+    "Age": 32,
+    "Country": "UK",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Classical",
+    "Minutes Streamed Per Day": 98,
+    "Number of Songs Liked": 448,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 29.48,
+    "Repeat Song Rate (%)": 18.8
+  },
+  {
+    "User_ID": "U1008",
+    "Age": 25,
+    "Country": "Germany",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Metal",
+    "Minutes Streamed Per Day": 526,
+    "Number of Songs Liked": 27,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 85.7,
+    "Repeat Song Rate (%)": 42.38
+  },
+  {
+    "User_ID": "U1009",
+    "Age": 37,
+    "Country": "Brazil",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 514,
+    "Number of Songs Liked": 299,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 53.39,
+    "Repeat Song Rate (%)": 46.89
+  },
+  {
+    "User_ID": "U1010",
+    "Age": 40,
+    "Country": "South Korea",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 266,
+    "Number of Songs Liked": 462,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 87.77,
+    "Repeat Song Rate (%)": 8.73
+  },
+  {
+    "User_ID": "U1011",
+    "Age": 43,
+    "Country": "Brazil",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 351,
+    "Number of Songs Liked": 108,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 48.15,
+    "Repeat Song Rate (%)": 23.7
+  },
+  {
+    "User_ID": "U1012",
+    "Age": 46,
+    "Country": "Canada",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 389,
+    "Number of Songs Liked": 328,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 20.24,
+    "Repeat Song Rate (%)": 43.38
+  },
+  {
+    "User_ID": "U1013",
+    "Age": 57,
+    "Country": "Germany",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 506,
+    "Number of Songs Liked": 432,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 41.11,
+    "Repeat Song Rate (%)": 37.83
+  },
+  {
+    "User_ID": "U1014",
+    "Age": 23,
+    "Country": "India",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 502,
+    "Number of Songs Liked": 215,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 68.46,
+    "Repeat Song Rate (%)": 48.6
+  },
+  {
+    "User_ID": "U1015",
+    "Age": 33,
+    "Country": "UK",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 193,
+    "Number of Songs Liked": 11,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 39.73,
+    "Repeat Song Rate (%)": 52.44
+  },
+  {
+    "User_ID": "U1016",
+    "Age": 19,
+    "Country": "India",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 542,
+    "Number of Songs Liked": 499,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 21.43,
+    "Repeat Song Rate (%)": 20.6
+  },
+  {
+    "User_ID": "U1017",
+    "Age": 16,
+    "Country": "USA",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 13,
+    "Number of Songs Liked": 423,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 12.46,
+    "Repeat Song Rate (%)": 17.93
+  },
+  {
+    "User_ID": "U1018",
+    "Age": 17,
+    "Country": "Germany",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 383,
+    "Number of Songs Liked": 468,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 25.09,
+    "Repeat Song Rate (%)": 8.58
+  },
+  {
+    "User_ID": "U1019",
+    "Age": 39,
+    "Country": "India",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 147,
+    "Number of Songs Liked": 461,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 48.81,
+    "Repeat Song Rate (%)": 37.66
+  },
+  {
+    "User_ID": "U1020",
+    "Age": 33,
+    "Country": "Australia",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 58,
+    "Number of Songs Liked": 417,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 87.41,
+    "Repeat Song Rate (%)": 44.49
+  },
+  {
+    "User_ID": "U1021",
+    "Age": 29,
+    "Country": "USA",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Metal",
+    "Minutes Streamed Per Day": 450,
+    "Number of Songs Liked": 12,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 60.39,
+    "Repeat Song Rate (%)": 14.44
+  },
+  {
+    "User_ID": "U1022",
+    "Age": 40,
+    "Country": "Brazil",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 445,
+    "Number of Songs Liked": 221,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 80.53,
+    "Repeat Song Rate (%)": 78.27
+  },
+  {
+    "User_ID": "U1023",
+    "Age": 42,
+    "Country": "Brazil",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 547,
+    "Number of Songs Liked": 248,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 26.03,
+    "Repeat Song Rate (%)": 8.42
+  },
+  {
+    "User_ID": "U1024",
+    "Age": 35,
+    "Country": "South Korea",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 218,
+    "Number of Songs Liked": 461,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 42.17,
+    "Repeat Song Rate (%)": 77.18
+  },
+  {
+    "User_ID": "U1025",
+    "Age": 53,
+    "Country": "Brazil",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 87,
+    "Number of Songs Liked": 347,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 60.4,
+    "Repeat Song Rate (%)": 10.49
+  },
+  {
+    "User_ID": "U1026",
+    "Age": 23,
+    "Country": "Japan",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 537,
+    "Number of Songs Liked": 494,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 88.09,
+    "Repeat Song Rate (%)": 62.45
+  },
+  {
+    "User_ID": "U1027",
+    "Age": 27,
+    "Country": "France",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 203,
+    "Number of Songs Liked": 437,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 22.83,
+    "Repeat Song Rate (%)": 21.55
+  },
+  {
+    "User_ID": "U1028",
+    "Age": 40,
+    "Country": "Germany",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 267,
+    "Number of Songs Liked": 475,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 69,
+    "Repeat Song Rate (%)": 10.66
+  },
+  {
+    "User_ID": "U1029",
+    "Age": 42,
+    "Country": "Canada",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 151,
+    "Number of Songs Liked": 195,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 63.01,
+    "Repeat Song Rate (%)": 47.74
+  },
+  {
+    "User_ID": "U1030",
+    "Age": 51,
+    "Country": "Canada",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 60,
+    "Number of Songs Liked": 195,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 22.74,
+    "Repeat Song Rate (%)": 30
+  },
+  {
+    "User_ID": "U1031",
+    "Age": 42,
+    "Country": "UK",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 201,
+    "Number of Songs Liked": 52,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 48.74,
+    "Repeat Song Rate (%)": 17.29
+  },
+  {
+    "User_ID": "U1032",
+    "Age": 47,
+    "Country": "USA",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 564,
+    "Number of Songs Liked": 400,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 28.7,
+    "Repeat Song Rate (%)": 69.19
+  },
+  {
+    "User_ID": "U1033",
+    "Age": 49,
+    "Country": "South Korea",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 140,
+    "Number of Songs Liked": 408,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 16.28,
+    "Repeat Song Rate (%)": 78.98
+  },
+  {
+    "User_ID": "U1034",
+    "Age": 58,
+    "Country": "Brazil",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 187,
+    "Number of Songs Liked": 439,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 78.07,
+    "Repeat Song Rate (%)": 59.58
+  },
+  {
+    "User_ID": "U1035",
+    "Age": 25,
+    "Country": "France",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 332,
+    "Number of Songs Liked": 196,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 72.27,
+    "Repeat Song Rate (%)": 15.08
+  },
+  {
+    "User_ID": "U1036",
+    "Age": 38,
+    "Country": "UK",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Metal",
+    "Minutes Streamed Per Day": 99,
+    "Number of Songs Liked": 80,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 54.04,
+    "Repeat Song Rate (%)": 20.32
+  },
+  {
+    "User_ID": "U1037",
+    "Age": 23,
+    "Country": "Japan",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 265,
+    "Number of Songs Liked": 95,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 85.5,
+    "Repeat Song Rate (%)": 63.65
+  },
+  {
+    "User_ID": "U1038",
+    "Age": 26,
+    "Country": "Japan",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 370,
+    "Number of Songs Liked": 4,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 77.3,
+    "Repeat Song Rate (%)": 71.5
+  },
+  {
+    "User_ID": "U1039",
+    "Age": 53,
+    "Country": "USA",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 478,
+    "Number of Songs Liked": 300,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 88.44,
+    "Repeat Song Rate (%)": 75.12
+  },
+  {
+    "User_ID": "U1040",
+    "Age": 33,
+    "Country": "South Korea",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 193,
+    "Number of Songs Liked": 454,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 13.37,
+    "Repeat Song Rate (%)": 69.69
+  },
+  {
+    "User_ID": "U1041",
+    "Age": 55,
+    "Country": "Brazil",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 581,
+    "Number of Songs Liked": 434,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 44.52,
+    "Repeat Song Rate (%)": 65.62
+  },
+  {
+    "User_ID": "U1042",
+    "Age": 23,
+    "Country": "Brazil",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 93,
+    "Number of Songs Liked": 264,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 38.82,
+    "Repeat Song Rate (%)": 12.88
+  },
+  {
+    "User_ID": "U1043",
+    "Age": 50,
+    "Country": "France",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 463,
+    "Number of Songs Liked": 463,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 66.21,
+    "Repeat Song Rate (%)": 59.49
+  },
+  {
+    "User_ID": "U1044",
+    "Age": 32,
+    "Country": "Brazil",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 84,
+    "Number of Songs Liked": 117,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 26.08,
+    "Repeat Song Rate (%)": 8.72
+  },
+  {
+    "User_ID": "U1045",
+    "Age": 42,
+    "Country": "India",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 404,
+    "Number of Songs Liked": 464,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 27.4,
+    "Repeat Song Rate (%)": 45.91
+  },
+  {
+    "User_ID": "U1046",
+    "Age": 53,
+    "Country": "USA",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 149,
+    "Number of Songs Liked": 110,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 47.11,
+    "Repeat Song Rate (%)": 50.35
+  },
+  {
+    "User_ID": "U1047",
+    "Age": 24,
+    "Country": "USA",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 585,
+    "Number of Songs Liked": 306,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 77.42,
+    "Repeat Song Rate (%)": 10.46
+  },
+  {
+    "User_ID": "U1048",
+    "Age": 40,
+    "Country": "Brazil",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 485,
+    "Number of Songs Liked": 342,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 44.37,
+    "Repeat Song Rate (%)": 67.99
+  },
+  {
+    "User_ID": "U1049",
+    "Age": 35,
+    "Country": "Australia",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 249,
+    "Number of Songs Liked": 178,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 34.56,
+    "Repeat Song Rate (%)": 19.68
+  },
+  {
+    "User_ID": "U1050",
+    "Age": 56,
+    "Country": "France",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 225,
+    "Number of Songs Liked": 214,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 22.61,
+    "Repeat Song Rate (%)": 39.19
+  },
+  {
+    "User_ID": "U1051",
+    "Age": 54,
+    "Country": "Japan",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Metal",
+    "Minutes Streamed Per Day": 414,
+    "Number of Songs Liked": 393,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 30.62,
+    "Repeat Song Rate (%)": 6.12
+  },
+  {
+    "User_ID": "U1052",
+    "Age": 14,
+    "Country": "South Korea",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 189,
+    "Number of Songs Liked": 374,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 37.27,
+    "Repeat Song Rate (%)": 8.55
+  },
+  {
+    "User_ID": "U1053",
+    "Age": 35,
+    "Country": "India",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 88,
+    "Number of Songs Liked": 315,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 85.45,
+    "Repeat Song Rate (%)": 79.32
+  },
+  {
+    "User_ID": "U1054",
+    "Age": 48,
+    "Country": "India",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 43,
+    "Number of Songs Liked": 490,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 21.9,
+    "Repeat Song Rate (%)": 77.31
+  },
+  {
+    "User_ID": "U1055",
+    "Age": 20,
+    "Country": "Canada",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 259,
+    "Number of Songs Liked": 475,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 85.11,
+    "Repeat Song Rate (%)": 78.75
+  },
+  {
+    "User_ID": "U1056",
+    "Age": 48,
+    "Country": "Brazil",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Classical",
+    "Minutes Streamed Per Day": 202,
+    "Number of Songs Liked": 195,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 20.36,
+    "Repeat Song Rate (%)": 11.51
+  },
+  {
+    "User_ID": "U1057",
+    "Age": 30,
+    "Country": "Japan",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 429,
+    "Number of Songs Liked": 8,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 47.98,
+    "Repeat Song Rate (%)": 50.57
+  },
+  {
+    "User_ID": "U1058",
+    "Age": 17,
+    "Country": "UK",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 282,
+    "Number of Songs Liked": 225,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 59.83,
+    "Repeat Song Rate (%)": 67.68
+  },
+  {
+    "User_ID": "U1059",
+    "Age": 30,
+    "Country": "UK",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Classical",
+    "Minutes Streamed Per Day": 67,
+    "Number of Songs Liked": 191,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 85,
+    "Repeat Song Rate (%)": 53.98
+  },
+  {
+    "User_ID": "U1060",
+    "Age": 18,
+    "Country": "France",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 587,
+    "Number of Songs Liked": 320,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 11.06,
+    "Repeat Song Rate (%)": 32.11
+  },
+  {
+    "User_ID": "U1061",
+    "Age": 60,
+    "Country": "USA",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 262,
+    "Number of Songs Liked": 301,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 35.53,
+    "Repeat Song Rate (%)": 55.35
+  },
+  {
+    "User_ID": "U1062",
+    "Age": 35,
+    "Country": "Australia",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 372,
+    "Number of Songs Liked": 283,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 84.71,
+    "Repeat Song Rate (%)": 56.46
+  },
+  {
+    "User_ID": "U1063",
+    "Age": 52,
+    "Country": "Canada",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 229,
+    "Number of Songs Liked": 79,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 55.78,
+    "Repeat Song Rate (%)": 11.71
+  },
+  {
+    "User_ID": "U1064",
+    "Age": 26,
+    "Country": "South Korea",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 316,
+    "Number of Songs Liked": 451,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 32.01,
+    "Repeat Song Rate (%)": 23.09
+  },
+  {
+    "User_ID": "U1065",
+    "Age": 59,
+    "Country": "UK",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 334,
+    "Number of Songs Liked": 454,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 61.36,
+    "Repeat Song Rate (%)": 60.91
+  },
+  {
+    "User_ID": "U1066",
+    "Age": 53,
+    "Country": "USA",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 580,
+    "Number of Songs Liked": 151,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 36.39,
+    "Repeat Song Rate (%)": 30.59
+  },
+  {
+    "User_ID": "U1067",
+    "Age": 51,
+    "Country": "South Korea",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 538,
+    "Number of Songs Liked": 363,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 20.13,
+    "Repeat Song Rate (%)": 16.15
+  },
+  {
+    "User_ID": "U1068",
+    "Age": 48,
+    "Country": "UK",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 394,
+    "Number of Songs Liked": 434,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 63.15,
+    "Repeat Song Rate (%)": 8.39
+  },
+  {
+    "User_ID": "U1069",
+    "Age": 57,
+    "Country": "Japan",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 228,
+    "Number of Songs Liked": 94,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 80.01,
+    "Repeat Song Rate (%)": 55.59
+  },
+  {
+    "User_ID": "U1070",
+    "Age": 57,
+    "Country": "Australia",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 570,
+    "Number of Songs Liked": 71,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 78.83,
+    "Repeat Song Rate (%)": 59.12
+  },
+  {
+    "User_ID": "U1071",
+    "Age": 40,
+    "Country": "India",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 342,
+    "Number of Songs Liked": 212,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 78.62,
+    "Repeat Song Rate (%)": 38.47
+  },
+  {
+    "User_ID": "U1072",
+    "Age": 34,
+    "Country": "UK",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 530,
+    "Number of Songs Liked": 310,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 33.21,
+    "Repeat Song Rate (%)": 18.58
+  },
+  {
+    "User_ID": "U1073",
+    "Age": 51,
+    "Country": "France",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 251,
+    "Number of Songs Liked": 236,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 70.99,
+    "Repeat Song Rate (%)": 67.63
+  },
+  {
+    "User_ID": "U1074",
+    "Age": 27,
+    "Country": "South Korea",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 331,
+    "Number of Songs Liked": 476,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 51.64,
+    "Repeat Song Rate (%)": 11.71
+  },
+  {
+    "User_ID": "U1075",
+    "Age": 27,
+    "Country": "Brazil",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 149,
+    "Number of Songs Liked": 122,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 50.76,
+    "Repeat Song Rate (%)": 56.23
+  },
+  {
+    "User_ID": "U1076",
+    "Age": 18,
+    "Country": "USA",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Classical",
+    "Minutes Streamed Per Day": 435,
+    "Number of Songs Liked": 165,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 24.8,
+    "Repeat Song Rate (%)": 62.1
+  },
+  {
+    "User_ID": "U1077",
+    "Age": 33,
+    "Country": "Japan",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 419,
+    "Number of Songs Liked": 440,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 18.06,
+    "Repeat Song Rate (%)": 74.21
+  },
+  {
+    "User_ID": "U1078",
+    "Age": 14,
+    "Country": "Australia",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 364,
+    "Number of Songs Liked": 171,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 11.74,
+    "Repeat Song Rate (%)": 46.14
+  },
+  {
+    "User_ID": "U1079",
+    "Age": 48,
+    "Country": "South Korea",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 23,
+    "Number of Songs Liked": 259,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 67.97,
+    "Repeat Song Rate (%)": 46.68
+  },
+  {
+    "User_ID": "U1080",
+    "Age": 47,
+    "Country": "UK",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Jazz",
+    "Minutes Streamed Per Day": 365,
+    "Number of Songs Liked": 259,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 15.61,
+    "Repeat Song Rate (%)": 66.64
+  },
+  {
+    "User_ID": "U1081",
+    "Age": 22,
+    "Country": "Canada",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 13,
+    "Number of Songs Liked": 64,
+    "Most Played Artist": "Ed Sheeran",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 27.3,
+    "Repeat Song Rate (%)": 23.04
+  },
+  {
+    "User_ID": "U1082",
+    "Age": 60,
+    "Country": "Germany",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Metal",
+    "Minutes Streamed Per Day": 574,
+    "Number of Songs Liked": 419,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 33,
+    "Repeat Song Rate (%)": 41.73
+  },
+  {
+    "User_ID": "U1083",
+    "Age": 37,
+    "Country": "Japan",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 474,
+    "Number of Songs Liked": 272,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 16.37,
+    "Repeat Song Rate (%)": 53.46
+  },
+  {
+    "User_ID": "U1084",
+    "Age": 19,
+    "Country": "South Korea",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 252,
+    "Number of Songs Liked": 129,
+    "Most Played Artist": "Dua Lipa",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 18.05,
+    "Repeat Song Rate (%)": 21.08
+  },
+  {
+    "User_ID": "U1085",
+    "Age": 40,
+    "Country": "Australia",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 123,
+    "Number of Songs Liked": 222,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 89.08,
+    "Repeat Song Rate (%)": 31.46
+  },
+  {
+    "User_ID": "U1086",
+    "Age": 57,
+    "Country": "Brazil",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "R&B",
+    "Minutes Streamed Per Day": 49,
+    "Number of Songs Liked": 207,
+    "Most Played Artist": "The Weeknd",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 65.27,
+    "Repeat Song Rate (%)": 71.22
+  },
+  {
+    "User_ID": "U1087",
+    "Age": 40,
+    "Country": "India",
+    "Streaming Platform": "Tidal",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 88,
+    "Number of Songs Liked": 153,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 53.63,
+    "Repeat Song Rate (%)": 60.28
+  },
+  {
+    "User_ID": "U1088",
+    "Age": 53,
+    "Country": "Australia",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 217,
+    "Number of Songs Liked": 67,
+    "Most Played Artist": "Drake",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 88.6,
+    "Repeat Song Rate (%)": 30.39
+  },
+  {
+    "User_ID": "U1089",
+    "Age": 43,
+    "Country": "South Korea",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 222,
+    "Number of Songs Liked": 70,
+    "Most Played Artist": "BTS",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 88.91,
+    "Repeat Song Rate (%)": 64.34
+  },
+  {
+    "User_ID": "U1090",
+    "Age": 13,
+    "Country": "Australia",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Country",
+    "Minutes Streamed Per Day": 31,
+    "Number of Songs Liked": 354,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 25.42,
+    "Repeat Song Rate (%)": 72.64
+  },
+  {
+    "User_ID": "U1091",
+    "Age": 42,
+    "Country": "UK",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Metal",
+    "Minutes Streamed Per Day": 426,
+    "Number of Songs Liked": 339,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 88.4,
+    "Repeat Song Rate (%)": 41.19
+  },
+  {
+    "User_ID": "U1092",
+    "Age": 46,
+    "Country": "France",
+    "Streaming Platform": "Deezer",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 265,
+    "Number of Songs Liked": 170,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 56.93,
+    "Repeat Song Rate (%)": 21.18
+  },
+  {
+    "User_ID": "U1093",
+    "Age": 20,
+    "Country": "Brazil",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Classical",
+    "Minutes Streamed Per Day": 578,
+    "Number of Songs Liked": 150,
+    "Most Played Artist": "Bad Bunny",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 26.23,
+    "Repeat Song Rate (%)": 61.41
+  },
+  {
+    "User_ID": "U1094",
+    "Age": 16,
+    "Country": "Germany",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 451,
+    "Number of Songs Liked": 451,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 81.19,
+    "Repeat Song Rate (%)": 38.14
+  },
+  {
+    "User_ID": "U1095",
+    "Age": 43,
+    "Country": "Canada",
+    "Streaming Platform": "Amazon Music",
+    "Top Genre": "Rock",
+    "Minutes Streamed Per Day": 454,
+    "Number of Songs Liked": 328,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Premium",
+    "Listening Time (Morning/Afternoon/Night)": "Afternoon",
+    "Discover Weekly Engagement (%)": 71.16,
+    "Repeat Song Rate (%)": 58.49
+  },
+  {
+    "User_ID": "U1096",
+    "Age": 59,
+    "Country": "Canada",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "EDM",
+    "Minutes Streamed Per Day": 283,
+    "Number of Songs Liked": 87,
+    "Most Played Artist": "Post Malone",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 61.27,
+    "Repeat Song Rate (%)": 59.11
+  },
+  {
+    "User_ID": "U1097",
+    "Age": 27,
+    "Country": "South Korea",
+    "Streaming Platform": "Apple Music",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 136,
+    "Number of Songs Liked": 101,
+    "Most Played Artist": "Adele",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Morning",
+    "Discover Weekly Engagement (%)": 64.6,
+    "Repeat Song Rate (%)": 54.91
+  },
+  {
+    "User_ID": "U1098",
+    "Age": 23,
+    "Country": "Australia",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Pop",
+    "Minutes Streamed Per Day": 311,
+    "Number of Songs Liked": 419,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 19.66,
+    "Repeat Song Rate (%)": 20.12
+  },
+  {
+    "User_ID": "U1099",
+    "Age": 46,
+    "Country": "South Korea",
+    "Streaming Platform": "Spotify",
+    "Top Genre": "Hip-Hop",
+    "Minutes Streamed Per Day": 11,
+    "Number of Songs Liked": 102,
+    "Most Played Artist": "Billie Eilish",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 43.81,
+    "Repeat Song Rate (%)": 55.65
+  },
+  {
+    "User_ID": "U1100",
+    "Age": 17,
+    "Country": "Brazil",
+    "Streaming Platform": "YouTube",
+    "Top Genre": "Reggae",
+    "Minutes Streamed Per Day": 379,
+    "Number of Songs Liked": 486,
+    "Most Played Artist": "Taylor Swift",
+    "Subscription Type": "Free",
+    "Listening Time (Morning/Afternoon/Night)": "Night",
+    "Discover Weekly Engagement (%)": 57.31,
+    "Repeat Song Rate (%)": 34.1
+  }];
+      var processedData= processData(data);
+      updateChart(processedData, "All");
+
+      d3.select("#platform-selector").on("change", function(){
+        var selectedPlatform= this.value;
+        updateChart(processedData, selectedPlatform);
+      });
+    
+    function processData(data) {
+      data.forEach(function(d){
+        d.Age = +d.Age;
+        d["Minutes Streamed Per Day"] = +d["Minutes Streamed Per Day"];
+      });
+      return data;
+    }
+    function updateChart(data, platform) {
+      var filterData = data;
+      if (platform !== "All") {
+        filterData= data.filter(function(d){
+          return d["Streaming Platform"]=== platform;
+        });
+      }
+      var results = [];
+      ageGroups.forEach(function(ageGroup){
+        var ageData = filterData.filter(function(d){
+          return d.Age >= ageGroup.min && d.Age < ageGroup.max;
+        });
+        if (ageData.length>0) {
+          var artistCount = {};
+          ageData.forEach(function(d){
+            var artist = d["Most Played Artist"];
+            artistCount[artist]= (artistCount[artist] || 0) +1;
+          });
+          var topArtist = null;
+          var maxCount = 0;
+          for (var artist in artistCount){
+            if(artistCount[artist] > maxCount){
+              maxCount = artistCount[artist];
+              topArtist= artist;
+            }
+          }
+          results.push({
+            ageGroup: ageGroup.name,
+            artist: topArtist,
+            count: maxCount
+          });
+        }
+      });
+      results.sort(function(a,b) {
+        return ageGroups.findIndex(g => g.name === a.ageGroup) - ageGroups.findIndex(g => g.name === b.ageGroup);
+      });
+
+      svg.selectAll("*").remove();
+      var x = d3.scale.linear()
+        .range([0, width])
+        .domain([0, d3.max(results, function(d){
+          return d.count;})]);
+      var y = d3.scale.ordinal()
+        .rangeRoundBands([0, height], .2)
+        .domain(results.map(function(d){
+          return d.ageGroup;
+        }));
+
+        svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0, " + height + ")")
+          .call(d3.svg.axis().scale(x).orient("bottom"));
+        svg.append("g")
+          .attr("class", "y axis")
+          .call(d3.svg.axis().scale(y).orient("left"));
+
+        svg.selectAll(".bar")
+          .data(results)
+          .enter().append("rect")
+          .attr("class", "bar")
+          .attr("y", function(d) { return y(d.ageGroup); })
+          .attr("height", y.rangeBand())
+          .attr("x", 0)
+          .attr("width", function(d) { return x(d.count); });
+
+          svg.selectAll(".artist-label")
+            .data(results)
+            .enter().append("text")
+            .attr("class", "artist-label")
+            .attr("x", function(d) { return x(d.count) + 5; })
+            .attr("y", function(d) { return y(d.ageGroup) + y.rangeBand() /2; })
+            .attr("dy", ".35em")
+            .text(function(d) { return d.artist; })
+            .style("font-size", "12px");
+
+          svg.append("text")
+            .attr("x", width /2)
+            .attr("y", -10)
+            .attr("text-anchor", "middle")
+            .attr("class", "label")
+            .text("Top Artist by Age Group" + (platform === "All" ? "": " (" + platform +")"));
+
+          svg.append("text")
+            .attr("class", "label")
+            .attr("x", width /2)
+            .attr("y", height + margin.bottom -10)
+            .attr("text-anchor", "middle")
+            .text("Number of Users");
+
+          svg.append("text")
+            .attr("class", "label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", - margin.left + 20)
+            .attr("x", -height /2)
+            .attr("text-anchor", "middle")
+            .text("Age Group");
+    }
+    </script>
+
+    <a href="Final_Data Viz_Voyles-Perez.html">Back to Homepage</a>
+</body>
+</html>
